@@ -102,7 +102,7 @@
     db.ref('restaurantMenu').on('value', (snapshot) => {
         const menu = snapshot.val();
         const sG = document.getElementById('selectGetraenke'), sS = document.getElementById('selectSpeisen'), sN = document.getElementById('selectNachspeisen');
-        sG.innerHTML = sS.innerHTML = sN.innerHTML = '<option value="" disabled selected>Wählen...</option>';
+        sG.innerHTML = sS.innerHTML = sN.innerHTML = '<option value="" disabled selected>Wählen.</option>';
         if (menu) {
             Object.values(menu).forEach(item => {
                 let opt = document.createElement('option');
@@ -137,7 +137,7 @@
                     <b>${currentBasket[n]}</b>
                     <button class="btn-qty" onclick="changeQty('${n}',1)">+</button>
                 </div>
-            </div>`).join("") : "Noch leer...";
+            </div>`).join("") : "Noch leer.";
     }
 
     function clearBasket() { currentBasket = {}; updateUI(); }
