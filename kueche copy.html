@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <title>Küche</title>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
+    <style>
+        body { font-family: sans-serif; background: #f1f5f9; padding: 20px; }
+        #kitchenDisplay { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 20px; }
+        .order-ticket { background: white; padding: 20px; border-radius: 12px; border-left: 10px solid #2563eb; }
+        .product-text { font-size: 1.2rem; font-weight: bold; margin: 15px 0; }
+        .btn-done { width: 100%; padding: 10px; background: #22c55e; color: white; border: none; border-radius: 8px; cursor: pointer; }
+    </style>
+</head>
+<body>
+    <h2 style="text-align:center">👨‍🍳 KÜCHE</h2>
+    <div id="kitchenDisplay"></div>
+<script>
+    const firebaseConfig = { databaseURL: "https://mein-restaurante-default-rtdb.europe-west1.firebasedatabase.app/" };
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.database();
+
+    db.ref('kitchenOrders').on('value', snapshot => {
+        const orders = snapshot.val();
+        const display = document.getElementById('kitchenDisplay');
+        display.innerHTML = "";
+        if(orders) Object.keys(orders).forEach(id => {
+            const o = orders[id];
+            display.innerHTML += `<div class="order-ticket">
+                <div><b>TISCH ${o.table}</b> (${o.time})</div>
+                <div class="product-text">${o.product}</div>
+                <button class="btn-done" onclick="done('${id}')">ERLEDIGT</button>
+            </div>`;
+        });
+    });
+
+    window.done = id => db.ref('kitchenOrders/' + id).remove();
+</script>
+</body>
+</html>

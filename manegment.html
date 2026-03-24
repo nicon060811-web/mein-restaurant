@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <title>Management</title>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
+    <style>
+        :root { --primary: #2563eb; --secondary: #1e293b; --bg: #f8fafc; --danger: #ef4444; }
+        body { font-family: 'Segoe UI', sans-serif; background: var(--bg); padding: 20px; display: flex; justify-content: center; }
+        .card { background: white; padding: 25px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); width: 100%; max-width: 450px; border: 1px solid #e2e8f0; }
+        h2 { color: var(--secondary); border-bottom: 2px solid #f1f5f9; padding-bottom: 10px; margin-top: 0; text-align: center; }
+        label { display: block; margin-top: 10px; font-weight: bold; color: #64748b; font-size: 14px; }
+        input, select { width: 100%; padding: 12px; margin: 5px 0 15px 0; border: 1.5px solid #cbd5e1; border-radius: 8px; box-sizing: border-box; font-size: 16px; }
+        .btn-add { width: 100%; padding: 12px; border: none; border-radius: 8px; font-weight: 600; cursor: pointer; background: var(--primary); color: white; font-size: 16px; transition: 0.2s; }
+        .category-header { background: #f1f5f9; padding: 6px 12px; border-radius: 6px; margin-top: 20px; font-weight: bold; color: var(--secondary); font-size: 14px; }
+        ul { list-style: none; padding: 0; margin: 5px 0; }
+        li { display: flex; justify-content: space-between; align-items: center; padding: 10px; border-bottom: 1px solid #f1f5f9; font-size: 16px; }
+        .btn-delete { background: var(--danger); color: white; border: none; padding: 6px 10px; border-radius: 6px; cursor: pointer; }
+    </style>
+</head>
+<body>
+<div class="card">
+    <h2>⚙️ Speisekarte pflegen</h2>
+    <label>Produktname:</label>
+    <input type="text" id="itemName" placeholder="z.B. Schnitzel, Cola, Eis.">
+    <label>Kategorie:</label>
+    <select id="itemCategory">
+        <option value="G">🥤 Getränk</option>
+        <option value="S">🍕 Speise</option>
+        <option value="N">🍰 Nachspeise</option>
+    </select>
+    <button class="btn-add" onclick="addItem()">Zur Speisekarte hinzufügen</button>
+    <div id="menuDisplay"></div>
+</div>
+<script>
+    const firebaseConfig = {
+        databaseURL: "https://mein-restaurante-default-rtdb.europe-west1.firebasedatabase.app/"
+    };
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.database();
+
+    db.ref('restaurantMenu').on('value', snapshot => {
+        const menu = snapshot.val();
+        const display = document.getElementById('menuDisplay');
+        display.innerHTML = "";
+        if(!menu) return;
+        const categories = { "G": "🥤 Getränke", "S": "🍕 Speisen", "N": "🍰 Nachspeisen" };
+        for (let key in categories) {
+            display.innerHTML += `<div class="category-header">${categories[key]}</div><ul id="list-${key}"></ul>`;
+            const list = document.getElementById(`list-${key}`);
+            for(let id in menu) {
+                if(menu[id].cat === key) {
+                    list.innerHTML += `<li><span>${menu[id].name}</span><button class="btn-delete" onclick="removeItem('${id}')">Löschen</button></li>`;
+                }
+            }
+        }
+    });
+
+    function addItem() {
+        const name = document.getElementById('itemName').value;
+        const cat = document.getElementById('itemCategory').value;
+        if (name) {
+            db.ref('restaurantMenu').push({ name: name, cat: cat });
+            document.getElementById('itemName').value = "";
+        }
+    }
+
+    function removeItem(id) {
+        if(confirm("Dauerhaft löschen?")) { db.ref('restaurantMenu/' + id).remove(); }
+    }
+</script>
+</body>
+</html>
