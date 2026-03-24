@@ -2,38 +2,115 @@
 <html lang="de">
 <head>
     <meta charset="UTF-8">
-    <title>Küche</title>
+    <title>Küche - Monitor</title>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
     <style>
-        body { font-family: sans-serif; background: #f1f5f9; padding: 20px; }
-        #kitchenDisplay { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 20px; }
-        .order-ticket { background: white; padding: 20px; border-radius: 12px; border-left: 10px solid #2563eb; }
-        .product-text { font-size: 1.2rem; font-weight: bold; margin: 15px 0; }
-        .btn-done { width: 100%; padding: 10px; background: #22c55e; color: white; border: none; border-radius: 8px; cursor: pointer; }
+        body { font-family: 'Segoe UI', sans-serif; background: #f1f5f9; padding: 20px; }
+        #kitchenDisplay { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 20px; }
+        
+        .order-ticket { 
+            background: white; 
+            padding: 20px; 
+            border-radius: 12px; 
+            border-left: 10px solid #2563eb; 
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+            transition: all 0.3s ease;
+        }
+
+        .ticket-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+        
+        .timer { 
+            font-family: monospace; 
+            font-size: 1.4rem; 
+            font-weight: bold; 
+            color: #2563eb; 
+            background: #eef2ff;
+            padding: 4px 8px;
+            border-radius: 6px;
+        }
+
+        .timer.late { color: #ef4444; background: #fee2e2; animation: blink 1s infinite; }
+
+        @keyframes blink { 50% { opacity: 0.7; } }
+
+        .product-text { font-size: 1.3rem; font-weight: bold; margin: 15px 0; color: #1e293b; }
+        
+        .btn-done { 
+            width: 100%; 
+            padding: 12px; 
+            background: #22c55e; 
+            color: white; 
+            border: none; 
+            border-radius: 8px; 
+            cursor: pointer; 
+            font-weight: bold;
+            font-size: 1rem;
+        }
+
+        .table-badge { background: #1e293b; color: white; padding: 4px 10px; border-radius: 5px; }
     </style>
 </head>
 <body>
-    <h2 style="text-align:center">👨‍🍳 KÜCHE</h2>
+    <h2 style="text-align:center">👨‍🍳 KÜCHEN-MONITOR</h2>
     <div id="kitchenDisplay"></div>
+
 <script>
     const firebaseConfig = { databaseURL: "https://mein-restaurante-default-rtdb.europe-west1.firebasedatabase.app/" };
     firebase.initializeApp(firebaseConfig);
     const db = firebase.database();
 
+    // Funktion zum Berechnen und Anzeigen des Countdowns
+    function updateTimers() {
+        const now = Date.now();
+        const tickets = document.querySelectorAll('.order-ticket');
+        
+        tickets.forEach(ticket => {
+            const timestamp = parseInt(ticket.getAttribute('data-time'));
+            const timerDisplay = ticket.querySelector('.timer');
+            
+            // 10 Minuten in Millisekunden = 600.000
+            const limit = 10 * 60 * 1000;
+            const elapsed = now - timestamp;
+            const remaining = limit - elapsed;
+
+            if (remaining <= 0) {
+                // Zeit abgelaufen
+                timerDisplay.classList.add('late');
+                timerDisplay.innerText = "OVERTIME";
+            } else {
+                const minutes = Math.floor(remaining / 60000);
+                const seconds = Math.floor((remaining % 60000) / 1000);
+                timerDisplay.innerText = `${minutes}:${seconds < 10 ? '0' : ''}${seconds}`;
+            }
+        });
+    }
+
+    // Bestellungen aus Firebase laden
     db.ref('kitchenOrders').on('value', snapshot => {
         const orders = snapshot.val();
         const display = document.getElementById('kitchenDisplay');
         display.innerHTML = "";
-        if(orders) Object.keys(orders).forEach(id => {
-            const o = orders[id];
-            display.innerHTML += `<div class="order-ticket">
-                <div><b>TISCH ${o.table}</b> (${o.time})</div>
-                <div class="product-text">${o.product}</div>
-                <button class="btn-done" onclick="done('${id}')">ERLEDIGT</button>
-            </div>`;
-        });
+        
+        if(orders) {
+            Object.keys(orders).forEach(id => {
+                const o = orders[id];
+                display.innerHTML += `
+                    <div class="order-ticket" data-time="${o.timestamp}">
+                        <div class="ticket-header">
+                            <span class="table-badge">TISCH ${o.table}</span>
+                            <span class="timer">10:00</span>
+                        </div>
+                        <div style="font-size: 0.8rem; color: #64748b;">Bestellt um: ${o.time}</div>
+                        <div class="product-text">${o.product}</div>
+                        <button class="btn-done" onclick="done('${id}')">ERLEDIGT ✓</button>
+                    </div>`;
+            });
+        }
     });
+
+    // Jede Sekunde den Zähler aktualisieren
+    setInterval(updateTimers, 1000);
 
     window.done = id => db.ref('kitchenOrders/' + id).remove();
 </script>
