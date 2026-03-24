@@ -68,23 +68,23 @@
     <h2>📝 Bestellung</h2>
     
     <label style="font-size: 14px; font-weight: bold;">Tischnummer eingeben:</label>
-    <input type="number" id="tableNumber" placeholder="Z. B. 5" min="1">
+    <input type="number" id="tableNumber" placeholder="Tischnummer" min="1">
     
     <div class="section-title">🥤 Getränke</div>
-    <select id="selectGetraenke"><option value="" disabled selected>Wählen...</option></select>
+    <select id="selectGetraenke"><option value="" disabled selected>Wählen.</option></select>
     <button class="btn-add" onclick="addToBasket('selectGetraenke')">+ Hinzufügen</button>
     
     <div class="section-title">🍕 Speisen</div>
-    <select id="selectSpeisen"><option value="" disabled selected>Wählen...</option></select>
+    <select id="selectSpeisen"><option value="" disabled selected>Wählen.</option></select>
     <button class="btn-add" onclick="addToBasket('selectSpeisen')">+ Hinzufügen</button>
     
     <div class="section-title">🍰 Nachspeisen</div>
-    <select id="selectNachspeisen"><option value="" disabled selected>Wählen...</option></select>
+    <select id="selectNachspeisen"><option value="" disabled selected>Wählen.</option></select>
     <button class="btn-add" onclick="addToBasket('selectNachspeisen')">+ Hinzufügen</button>
     
     <div id="basket">
         <div style="font-weight: bold; margin-bottom: 10px;">Dein Warenkorb:</div>
-        <div id="basketList"><span>Noch leer...</span></div>
+        <div id="basketList"><span>Noch leer.</span></div>
         <button class="btn-clear" onclick="clearBasket()">Warenkorb leeren</button>
     </div>
     
